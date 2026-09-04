@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - Lộ Trình AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- THIẾT LẬP CƠ BẢN ĐỒNG BỘ UI --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2048&auto=format&fit=crop');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            color: #f4f4f9;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Lớp phủ làm tối background */
+        .overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 0;
+        }
+
+        /* --- BOX ĐĂNG NHẬP --- */
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            background: #0f0f13;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 50px 40px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* Vệt sáng trên cùng mô phỏng bảng mạch Neon */
+        .login-container::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, #ff99cc, #4da6ff, #a3e635, #ffcc00);
+        }
+
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header i { font-size: 3em; color: #ffcc00; margin-bottom: 15px; }
+        .login-header h2 { color: #fff; margin: 0; font-size: 1.8em; text-transform: uppercase; letter-spacing: 2px; }
+        .login-header p { color: #888; margin: 10px 0 0 0; font-size: 1em; }
+
+        /* --- FORM --- */
+        .input-group { margin-bottom: 25px; position: relative; }
+        .input-group label { display: block; color: #bbb; margin-bottom: 8px; font-size: 0.95em; font-weight: 500;}
+        
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #666; }
+        
+        .input-group input {
+            width: 100%; padding: 15px 15px 15px 45px; box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px; color: #fff; font-size: 1.05em; transition: all 0.3s;
+        }
+        .input-group input:focus { outline: none; border-color: #4da6ff; background: rgba(77, 166, 255, 0.05); }
+        .input-group input:focus + i { color: #4da6ff; }
+
+        /* --- BUTTON --- */
+        .submit-btn {
+            width: 100%; padding: 15px; margin-top: 10px;
+            background: rgba(77, 166, 255, 0.1); color: #4da6ff;
+            border: 1px solid rgba(77, 166, 255, 0.3); border-radius: 8px;
+            font-size: 1.1em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        .submit-btn:hover { background: rgba(255, 204, 0, 0.1); color: #ffcc00; border-color: #ffcc00; }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Trạng thái thông báo */
+        .message-box {
+            margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center; font-size: 0.95em; display: none;
+        }
+        .message-box.error { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.3); display: block;}
+        .message-box.success { background: rgba(163, 230, 53, 0.1); color: #a3e635; border: 1px solid rgba(163, 230, 53, 0.3); display: block;}
+        
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #ffcc00; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<div class="login-container">
+    <div class="login-header">
+        <i class="fa-solid fa-film"></i>
+        <h2>Workspace</h2>
+        <p>Đăng nhập để truy cập lộ trình học</p>
+    </div>
+
+    <form id="loginForm">
+        <div class="input-group">
+            <label for="username">Tên đăng nhập</label>
+            <div class="input-wrapper">
+                <input type="text" id="username" placeholder="Nhập tài khoản của bạn" required autocomplete="off">
+                <i class="fa-solid fa-user"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="password">Mật khẩu</label>
+            <div class="input-wrapper">
+                <input type="password" id="password" placeholder="Nhập mật khẩu" required>
+                <i class="fa-solid fa-lock"></i>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="loginBtn">
+            <span id="btnText">Đăng Nhập</span>
+            <div class="loader" id="btnLoader"></div>
+        </button>
+
+        <div id="messageBox" class="message-box"></div>
+    </form>
+</div>
+
+<script>
+    // BƯỚC 1: Dán URL Web App của Google Apps Script vào đây
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxJGWpbdYVlB5a3qRzhmlXFDcoclQu7H5hfX0tTGKLG43ssZHFxQd5glY65_9OSeiBwOg/exec';
+
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('btnText');
+    const btnLoader = document.getElementById('btnLoader');
+    const messageBox = document.getElementById('messageBox');
+
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const usernameVal = document.getElementById('username').value;
+        const passwordVal = document.getElementById('password').value;
+
+        // Reset trạng thái UI
+        messageBox.className = 'message-box';
+        messageBox.innerText = '';
+        loginBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'block';
+
+        try {
+            // Gọi API Backend
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                // Chống lỗi CORS khi gọi từ local/domain khác qua GAS
+                redirect: 'follow', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GAS nhận chuỗi tốt hơn
+                body: JSON.stringify({ 
+                    action: 'login', 
+                    username: usernameVal, 
+                    password: passwordVal 
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.code === 200 && result.data.token) {
+                // Đăng nhập thành công, lưu Session Token
+                localStorage.setItem('session_token', result.data.token);
+                localStorage.setItem('user_role', result.data.role); // Có thể lưu để dùng ẩn/hiện UI
+
+                showMessage('Đăng nhập thành công! Đang chuyển hướng...', 'success');
+                
+                // Chuyển hướng người dùng vào trang học tập chính sau 1.5s
+                setTimeout(() => {
+                    window.location.href = 'index.html'; 
+                }, 1500);
+            } else {
+                // Trả về lỗi từ Server
+                showMessage(result.data.error || 'Sai tài khoản hoặc mật khẩu!', 'error');
+            }
+
+        } catch (error) {
+            console.error('Lỗi kết nối:', error);
+            showMessage('Lỗi kết nối máy chủ. Vui lòng thử lại!', 'error');
+        } finally {
+            // Khôi phục nút bấm
+            loginBtn.disabled = false;
+            btnText.style.display = 'block';
+            btnLoader.style.display = 'none';
+        }
+    });
+
+    function showMessage(msg, type) {
+        messageBox.innerText = msg;
+        messageBox.className = `message-box ${type}`;
+    }
+
+    // Tự động kiểm tra nếu đã đăng nhập thì đá thẳng vào trong
+    window.onload = function() {
+        if(localStorage.getItem('session_token')) {
+            window.location.href = 'index.html';
+        }
+    }
+</script>
+
+</body>
+</html>
