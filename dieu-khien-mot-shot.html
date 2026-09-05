@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điều Khiển Một Shot - Lộ Trình AI</title>
+    
+    <!-- SCRIPT KIỂM TRA ĐĂNG NHẬP -->
+    <script>
+        if (!localStorage.getItem('session_token')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- THIẾT LẬP CƠ BẢN --- */
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #09090b; 
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 100%, rgba(77, 166, 255, 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: #f4f4f9;
+            line-height: 1.8; /* Tăng line-height cho blog dễ đọc */
+        }
+
+        .container {
+            width: 80%; max-width: 1000px; /* Thu hẹp max-width để form Blog đọc không bị mỏi mắt */
+            margin: 40px auto;
+            background: rgba(15, 15, 19, 0.7); backdrop-filter: blur(20px);
+            border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 50px 5vw; box-sizing: border-box;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        /* --- ĐIỀU HƯỚNG --- */
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 50px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px;
+        }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px; color: #a855f7;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+            background: rgba(168, 85, 247, 0.1); padding: 12px 25px; border-radius: 30px;
+            border: 1px solid rgba(168, 85, 247, 0.3); font-size: 1.1em;
+        }
+        .back-btn:hover { background: rgba(168, 85, 247, 0.2); box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+        .week-badge {
+            background: #a855f7; color: #fff; padding: 6px 16px; border-radius: 20px;
+            font-size: 0.9em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* --- BLOG HEADER --- */
+        .blog-header { text-align: center; margin-bottom: 50px; }
+        .blog-title {
+            font-size: 2.8em; font-weight: 900; margin: 0 0 20px 0; line-height: 1.3; letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #fff, #a855f7, #4da6ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .blog-meta { color: #888; font-size: 1.05em; display: flex; justify-content: center; gap: 20px; }
+        .blog-meta span { display: flex; align-items: center; gap: 8px; }
+
+        /* --- BLOG CONTENT TYPOGRAPHY --- */
+        .blog-content p { font-size: 1.15em; color: #d1d5db; margin-bottom: 25px; }
+        .blog-content h2 {
+            color: #fff; font-size: 1.8em; margin: 60px 0 25px 0; display: flex; align-items: center; gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;
+        }
+        .blog-content h2 .step-num {
+            background: #a855f7; color: #fff; width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 0.7em; flex-shrink: 0;
+        }
+        .blog-content h3 { color: #4da6ff; font-size: 1.3em; margin: 30px 0 15px 0; }
+        .blog-content ul { font-size: 1.15em; color: #d1d5db; margin-bottom: 25px; padding-left: 20px; }
+        .blog-content li { margin-bottom: 10px; }
+        
+        /* Highlight Note (Trích dẫn) */
+        .blog-quote {
+            background: rgba(168, 85, 247, 0.05); border-left: 4px solid #a855f7;
+            padding: 25px 30px; border-radius: 0 12px 12px 0; margin: 40px 0;
+            font-size: 1.2em; font-style: italic; color: #e2e8f0; line-height: 1.6;
+        }
+        .blog-quote i { color: #a855f7; font-size: 1.2em; margin-right: 10px; }
+
+        /* --- KHUNG ẢNH THAO TÁC TAY --- */
+        .blog-img-wrapper { margin: 40px 0; }
+        .blog-img-box {
+            width: 100%; background: #000; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+            cursor: zoom-in;
+        }
+        .blog-img-box img { width: 100%; height: auto; display: block; opacity: 0.9; transition: 0.3s; }
+        .blog-img-box:hover img { opacity: 1; transform: scale(1.02); }
+        .img-caption {
+            text-align: center; color: #888; font-size: 0.95em; font-style: italic; margin-top: 12px;
+        }
+        .img-placeholder-text {
+            position: absolute; color: #fff; background: rgba(0,0,0,0.7); padding: 10px 20px;
+            border-radius: 8px; font-family: monospace; font-size: 1em; z-index: 1; pointer-events: none;
+        }
+
+        /* --- BẢNG PROMPT (Prompt Guide) --- */
+        .prompt-breakdown {
+            background: #111115; border: 1px solid rgba(77, 166, 255, 0.3); border-radius: 12px;
+            padding: 30px; margin: 30px 0;
+        }
+        .prompt-breakdown h4 { color: #4da6ff; margin: 0 0 20px 0; font-size: 1.2em; text-transform: uppercase; letter-spacing: 1px; }
+        .prompt-formula {
+            background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.2);
+            font-family: monospace; color: #a3e635; font-size: 1.1em; margin-bottom: 20px; text-align: center;
+        }
+        .prompt-example-box { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; border-left: 3px solid #ffcc00; }
+        .prompt-example-box p { margin: 0 0 10px 0; font-size: 1.05em; color: #fff; }
+        .prompt-example-box code { color: #ff99cc; font-size: 1.1em; }
+
+        /* --- LIGHTBOX --- */
+        .img-modal {
+            display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px);
+            align-items: center; justify-content: center; flex-direction: column;
+        }
+        .img-modal-content { max-width: 90%; max-height: 85vh; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); object-fit: contain; }
+        .img-modal-close {
+            position: absolute; top: 20px; right: 40px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .img-modal-close:hover { color: #ffcc00; }
+
+        @media (max-width: 768px) {
+            .container { width: 95%; padding: 30px 5vw; }
+            .blog-title { font-size: 2.2em; }
+            .blog-quote { padding: 20px; font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="header-top">
+        <a href="hoc-tap.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Về Lộ trình</a>
+        <div class="week-badge">Tuần 2 - 3</div>
+    </div>
+
+    <!-- BLOG HEADER -->
+    <div class="blog-header">
+        <h1 class="blog-title">Hướng Dẫn Chi Tiết: Điều Khiển Hoàn Toàn Một Shot Phim AI</h1>
+        <div class="blog-meta">
+            <span><i class="fa-solid fa-user-pen"></i> Đạo diễn AI</span>
+            <span><i class="fa-solid fa-clock"></i> 10 phút đọc</span>
+            <span><i class="fa-solid fa-tags"></i> Kỹ thuật thao tác tay</span>
+        </div>
+    </div>
+
+    <!-- BLOG CONTENT -->
+    <div class="blog-content">
+        <p>Chào mọi người, việc tạo ra một bức ảnh tĩnh đẹp bằng Midjourney chỉ là bước khởi đầu. Khi bước vào thế giới AI Video, thử thách thực sự nằm ở việc <strong>kiểm soát chuyển động</strong>. Làm sao để nhân vật quay đầu đúng hướng? Làm sao để camera trượt (Pan) mượt mà ngang qua khung hình thay vì bay loạn xạ?</p>
+        
+        <p>Trong bài viết này, mình sẽ hướng dẫn chi tiết từng thao tác click chuột trên giao diện để giúp bạn làm chủ hoàn toàn một shot phim, đặc biệt là với luồng <strong>Image-to-Video (Start Frame)</strong> mà team chúng ta đang sử dụng làm trọng tâm.</p>
+
+        <div class="blog-quote">
+            <i class="fa-solid fa-quote-left"></i>
+            Một shot phim xuất sắc không nằm ở việc AI tự vẽ ra cái gì, mà nằm ở việc chúng ta ra lệnh cho nó di chuyển hệ thống vật lý đó như thế nào.
+        </div>
+
+        <!-- BƯỚC 1 -->
+        <h2><div class="step-num">1</div> Chuẩn bị Start Frame (First Frame)</h2>
+        <p>Mọi thứ bắt đầu từ việc tải lên bức ảnh gốc. Bức ảnh này sẽ quy định 100% về tỷ lệ khung hình, ánh sáng, màu sắc và nhân vật của đoạn video sắp được tạo ra.</p>
+
+        <div class="blog-img-wrapper">
+            <div class="blog-img-box">
+                <!-- BẠN CHÈN ẢNH CHỤP THAO TÁC UPLOAD ẢNH VÀO ĐÂY -->
+                <img src="thu-muc-anh/step1-upload-image.jpg" alt="Thao tác Upload ảnh" onclick="openLightbox(this.src)">
+                <div class="img-placeholder-text">[ Ảnh chụp màn hình: Kéo thả ảnh Start Frame vào giao diện ]</div>
+            </div>
+            <div class="img-caption">Bước 1: Tải ảnh gốc (Start Frame) lên hệ thống.</div>
+        </div>
+
+        <!-- BƯỚC 2 -->
+        <h2><div class="step-num">2</div> Thao Tác Tay: Điều khiển Camera & Motion</h2>
+        <p>Đây là bước quyết định kỹ năng của bạn. Hầu hết các nền tảng tạo video hiện nay đều cung cấp bộ công cụ điều khiển chuyển động trực quan (Camera Controls & Motion Brush).</p>
+        
+        <h3>2.1. Thiết lập Camera (Camera Movement)</h3>
+        <p>Thay vì phó mặc cho AI tự quyết định camera sẽ bay đi đâu, bạn hãy chủ động kéo các thanh trượt (Sliders) để thiết lập trục XYZ của máy quay:</p>
+        <ul>
+            <li><strong>Pan (Trái/Phải):</strong> Máy quay quét ngang. Rất tốt để bám theo nhân vật đang đi bộ.</li>
+            <li><strong>Tilt (Lên/Xuống):</strong> Máy quay ngước lên hoặc cúi xuống. Hiệu quả khi muốn khoe sự vĩ đại của một tòa nhà hoặc bầu trời.</li>
+            <li><strong>Zoom (In/Out):</strong> Đẩy máy quay lại gần (Đặc tả cảm xúc) hoặc lùi ra xa (Khoe bối cảnh).</li>
+        </ul>
+
+        <div class="blog-img-wrapper">
+            <div class="blog-img-box">
+                <!-- BẠN CHÈN ẢNH CHỤP GIAO DIỆN CHỈNH THANH CAMERA VÀO ĐÂY -->
+                <img src="thu-muc-anh/step2-camera-control.jpg" alt="Thao tác chỉnh Camera" onclick="openLightbox(this.src)">
+                <div class="img-placeholder-text">[ Ảnh chụp màn hình: Các thanh trượt Pan, Tilt, Zoom ]</div>
+            </div>
+            <div class="img-caption">Kéo thanh Slider để ép quỹ đạo Camera theo ý muốn.</div>
+        </div>
+
+        <h3>2.2. Sử dụng Motion Brush (Cọ Vẽ Chuyển Động)</h3>
+        <p>Nếu bạn muốn cảnh nền đứng im tĩnh lặng, nhưng chỉ muốn mặt nước gợn sóng hoặc lá cây đung đưa, công cụ Motion Brush sinh ra để làm việc đó. Bạn chỉ cần dùng cọ (Brush) bôi vào vùng muốn di chuyển và thiết lập hướng mũi tên cho nó.</p>
+
+        <div class="blog-img-wrapper">
+            <div class="blog-img-box">
+                <!-- BẠN CHÈN ẢNH CHỤP THAO TÁC QUÉT MOTION BRUSH VÀO ĐÂY -->
+                <img src="thu-muc-anh/step3-motion-brush.jpg" alt="Thao tác dùng Motion Brush" onclick="openLightbox(this.src)">
+                <div class="img-placeholder-text">[ Ảnh chụp màn hình: Dùng cọ bôi vùng mây/nước và trỏ hướng ]</div>
+            </div>
+            <div class="img-caption">Dùng Motion Brush bôi chính xác vào chủ thể cần chuyển động độc lập.</div>
+        </div>
+
+        <!-- BƯỚC 3 -->
+        <h2><div class="step-num">3</div> Viết Prompt Điều Khiển (Video Prompting)</h2>
+        <p>Có một sự khác biệt rất lớn giữa Prompt tạo Ảnh và Prompt tạo Video. Ở phương pháp Image-to-Video, hệ thống đã có sẵn bức ảnh Start Frame rồi, nên bạn <strong>KHÔNG CẦN</strong> miêu tả lại nhân vật mặc áo màu gì hay đứng ở đâu nữa.</p>
+        <p>Prompt video tập trung vào việc miêu tả <strong>SỰ THAY ĐỔI THEO THỜI GIAN</strong> (Thời gian trôi qua thì cái gì đang xảy ra?).</p>
+
+        <div class="prompt-breakdown">
+            <h4>Cấu trúc Video Prompt chuẩn</h4>
+            <div class="prompt-formula">
+                [Hành động của chủ thể] + [Sự thay đổi của Môi trường] + [Hiệu ứng Máy quay (nếu có)]
+            </div>
+            <div class="prompt-example-box">
+                <p><i class="fa-solid fa-xmark" style="color: #ff4d4d;"></i> <strong>Cách viết sai (Miêu tả lại ảnh):</strong></p>
+                <code style="color: #aaa; text-decoration: line-through;">A man wearing red jacket standing in the rain, cyberpunk city.</code>
+                
+                <p style="margin-top: 20px;"><i class="fa-solid fa-check" style="color: #a3e635;"></i> <strong>Cách viết đúng (Miêu tả chuyển động):</strong></p>
+                <code>The man slowly turns his head to look directly at the camera, heavy rain falling, neon lights blinking in the background, cinematic slow motion.</code>
+            </div>
+        </div>
+
+        <!-- BƯỚC 4 -->
+        <h2><div class="step-num">4</div> Tinh chỉnh & Render</h2>
+        <p>Cuối cùng, hãy kiểm tra lại mức độ bám sát Prompt (Prompt Adherence hoặc Text Guidance Scale). Nếu bạn muốn AI tuân thủ tuyệt đối từng chữ bạn viết, hãy kéo chỉ số này lên cao. Tuy nhiên, nếu kéo quá cao, video có thể bị cứng và mất tự nhiên.</p>
+        <p>Sau khi thiết lập xong, nhấn <strong>Generate</strong>. Nếu video ra chưa ưng ý (bị gãy tay, lỗi vật lý), đừng vội bỏ cuộc! Thay đổi Seed, chỉnh lại một chút góc máy, hoặc đổi từ vựng trong prompt và Generate lại.</p>
+
+        <div class="blog-img-wrapper">
+            <div class="blog-img-box">
+                <!-- BẠN CHÈN ẢNH NÚT RENDER HOẶC KẾT QUẢ CUỐI CÙNG VÀO ĐÂY -->
+                <img src="thu-muc-anh/step4-render-final.jpg" alt="Hoàn tất Render" onclick="openLightbox(this.src)">
+                <div class="img-placeholder-text">[ Ảnh chụp màn hình: Quá trình Render hoặc Kết quả Final ]</div>
+            </div>
+            <div class="img-caption">Kiểm tra kết quả và sẵn sàng cho vòng lặp tinh chỉnh tiếp theo.</div>
+        </div>
+
+        <p>Chúc bạn thành công với shot phim đầu tay của mình!</p>
+
+    </div>
+</div>
+
+<!-- Khung Modal Ẩn cho Lightbox -->
+<div id="imageLightbox" class="img-modal" onclick="closeLightbox()">
+    <span class="img-modal-close">&times;</span>
+    <img class="img-modal-content" id="lightboxImg">
+</div>
+
+<script>
+    // Lệnh kích hoạt tính năng phóng to ảnh
+    function openLightbox(src) {
+        document.getElementById('imageLightbox').style.display = 'flex';
+        document.getElementById('lightboxImg').src = src;
+    }
+    function closeLightbox() {
+        document.getElementById('imageLightbox').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

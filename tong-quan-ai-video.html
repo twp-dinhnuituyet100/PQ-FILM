@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng Quan AI Video - Lộ Trình AI</title>
+    
+    <!-- SCRIPT KIỂM TRA ĐĂNG NHẬP (BẢO MẬT) -->
+    <script>
+        if (!localStorage.getItem('session_token')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- THIẾT LẬP CƠ BẢN --- */
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #09090b; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(77, 166, 255, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: #f4f4f9;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 80%; max-width: 1600px; margin: 40px auto;
+            background: rgba(15, 15, 19, 0.6); backdrop-filter: blur(20px);
+            border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 50px 4vw; box-sizing: border-box;
+        }
+
+        /* --- ĐIỀU HƯỚNG --- */
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 50px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px;
+        }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px; color: #a855f7;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+            background: rgba(168, 85, 247, 0.1); padding: 12px 25px; border-radius: 30px;
+            border: 1px solid rgba(168, 85, 247, 0.3); font-size: 1.1em;
+        }
+        .back-btn:hover { background: rgba(168, 85, 247, 0.2); box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+        .week-badge {
+            background: #a855f7; color: #fff; padding: 6px 16px; border-radius: 20px;
+            font-size: 0.9em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero-section { text-align: center; margin-bottom: 60px; }
+        .hero-title {
+            font-size: 3.5em; font-weight: 900; margin: 20px 0; line-height: 1.2; letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, #a855f7, #4da6ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-desc { color: #888; font-size: 1.2em; max-width: 800px; margin: 0 auto; }
+
+        /* --- KHỐI TRỌNG TÂM: SEEDANCE (V2.0 & V2.5) --- */
+        .featured-platform {
+            background: linear-gradient(135deg, rgba(26, 16, 37, 0.8) 0%, rgba(17, 17, 21, 0.9) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 20px; padding: 40px; margin-bottom: 60px;
+            display: flex; gap: 40px; align-items: center;
+            box-shadow: 0 20px 50px rgba(168, 85, 247, 0.15);
+            position: relative; overflow: hidden;
+        }
+        .featured-platform::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, #a855f7, #ff99cc, #4da6ff);
+        }
+        
+        .fp-content { flex: 1; }
+        .fp-logo { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .fp-logo i { font-size: 3em; color: #a855f7; }
+        .fp-logo h2 { margin: 0; font-size: 2.5em; color: #fff; letter-spacing: 1px; }
+        
+        .version-tags { display: flex; gap: 10px; margin-bottom: 25px; }
+        .v-tag { 
+            padding: 6px 15px; border-radius: 30px; font-size: 0.9em; font-weight: bold; font-family: monospace;
+        }
+        .v-tag.v2 { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .v-tag.v25 { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid #a855f7; box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+
+        .fp-desc { color: #d1d5db; font-size: 1.1em; line-height: 1.7; margin-bottom: 25px; }
+        
+        .fp-features { list-style: none; padding: 0; margin: 0; }
+        .fp-features li { color: #e2e8f0; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 12px; font-size: 1.1em; }
+        .fp-features li i { color: #a3e635; margin-top: 5px; font-size: 0.9em; }
+
+        .fp-visual { flex: 1; min-width: 0; }
+        .fp-video-box {
+            width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px;
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1); cursor: pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .fp-video-box img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: 0.4s ease; }
+        .fp-video-box:hover img { opacity: 1; transform: scale(1.05); }
+        .fp-video-box .play-btn {
+            position: absolute; width: 70px; height: 70px; background: rgba(168,85,247,0.4); backdrop-filter: blur(5px);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.8em; border: 2px solid rgba(255,255,255,0.5); transition: 0.3s;
+        }
+        .fp-video-box:hover .play-btn { transform: scale(1.15); background: rgba(168,85,247,0.7); }
+
+        /* --- GIỚI THIỆU CÁC NỀN TẢNG PHỤ (GRID) --- */
+        .section-title-small { color: #888; font-size: 1.2em; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;}
+        
+        .platform-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 40px; margin-bottom: 80px;
+        }
+        .platform-card {
+            background: #111115; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px;
+            padding: 30px; position: relative; overflow: hidden; transition: all 0.4s ease;
+        }
+        .platform-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        
+        .platform-card.veo:hover { border-color: #4da6ff; box-shadow: 0 10px 40px rgba(77, 166, 255, 0.15); }
+        .platform-card.kling:hover { border-color: #ff99cc; box-shadow: 0 10px 40px rgba(255, 153, 204, 0.15); }
+
+        .pf-logo-small { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .pf-logo-small i { font-size: 2em; }
+        .pf-logo-small h3 { margin: 0; font-size: 1.5em; color: #fff; }
+        
+        .pf-features-small { list-style: none; padding: 0; margin: 0; }
+        .pf-features-small li { color: #bbb; margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; font-size: 1em; }
+        .pf-features-small li i { color: #666; margin-top: 5px; font-size: 0.8em; }
+
+        /* --- BẢNG SO SÁNH SỨC MẠNH --- */
+        .comparison-section { margin-bottom: 60px; }
+        .section-title { color: #fff; font-size: 2em; text-align: center; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px; }
+        .section-title span { color: #a855f7; }
+        
+        .compare-table-wrapper { overflow-x: auto; }
+        .compare-table { width: 100%; border-collapse: collapse; text-align: left; background: rgba(0,0,0,0.3); border-radius: 12px; overflow: hidden; }
+        .compare-table th, .compare-table td { padding: 20px 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .compare-table th { background: rgba(255,255,255,0.03); color: #fff; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+        .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .compare-table td { color: #aaa; font-size: 1.05em; }
+        .compare-table td:first-child { color: #fff; font-weight: bold; }
+        
+        /* Huy hiệu xếp hạng */
+        .badge { padding: 5px 12px; border-radius: 6px; font-size: 0.85em; font-weight: bold; display: inline-block; }
+        .bg-supreme { background: linear-gradient(90deg, #a855f7, #ff99cc); color: #fff; border: 1px solid #ff99cc; box-shadow: 0 0 10px rgba(168,85,247,0.4); }
+        .bg-best { background: rgba(163, 230, 53, 0.15); color: #a3e635; border: 1px solid rgba(163, 230, 53, 0.3); }
+        .bg-good { background: rgba(77, 166, 255, 0.15); color: #4da6ff; border: 1px solid rgba(77, 166, 255, 0.3); }
+
+        @media (max-width: 1024px) {
+            .featured-platform { flex-direction: column; }
+            .fp-visual { width: 100%; }
+        }
+        @media (max-width: 768px) {
+            .container { width: 95%; padding: 30px 4vw; }
+            .hero-title { font-size: 2.5em; }
+            .platform-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="header-top">
+        <a href="hoc-tap.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Về Lộ trình</a>
+        <div class="week-badge">Tuần 2 - 3</div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <h1 class="hero-title">KỶ NGUYÊN AI VIDEO</h1>
+        <p class="hero-desc">Sự dịch chuyển từ việc tạo ra những điểm ảnh tĩnh (Image) sang việc mô phỏng lại hệ thống vật lý và quy luật không - thời gian của thế giới thực.</p>
+    </div>
+
+    <!-- KHỐI TRỌNG TÂM: SEEDANCE -->
+    <div class="featured-platform">
+        <div class="fp-content">
+            <div class="fp-logo">
+                <i class="fa-solid fa-wave-square"></i>
+                <h2>Seedance</h2>
+            </div>
+            
+            <div class="version-tags">
+                <span class="v-tag v2">Bản v2.0 (Ổn định)</span>
+                <span class="v-tag v25"><i class="fa-solid fa-bolt"></i> Bản v2.5 (Mới nhất)</span>
+            </div>
+
+            <p class="fp-desc">
+                Seedance hiện đang là nền tảng cốt lõi và quan trọng nhất trong hệ sinh thái AI Video. Phiên bản 2.0 đã thiết lập một tiêu chuẩn mới về độ nét, nhưng bản cập nhật <strong>2.5</strong> mới thực sự là cuộc cách mạng khi giải quyết triệt để vấn đề biến dạng vật lý và duy trì tính nhất quán hoàn hảo.
+            </p>
+
+            <ul class="fp-features">
+                <li><i class="fa-solid fa-star"></i> <strong>Seedance 2.5:</strong> Chuyển động siêu mượt (Hyper-fluid motion), bám sát chuyển động phức tạp mà không gãy form.</li>
+                <li><i class="fa-solid fa-star"></i> <strong>Seedance 2.0:</strong> Nền tảng render đáng tin cậy với khả năng hiểu prompt tuyệt vời cho các cảnh tĩnh và camera xoay cơ bản.</li>
+                <li><i class="fa-solid fa-star"></i> <strong>Kiểm soát môi trường:</strong> Khả năng mô phỏng bóng đổ, phản chiếu ánh sáng và tương tác vật lý chân thực nhất tính đến hiện tại.</li>
+            </ul>
+        </div>
+        
+        <div class="fp-visual">
+            <div class="fp-video-box">
+                <!-- CHÈN ẢNH HOẶC THUMBNAIL CỦA SEEDANCE VÀO ĐÂY -->
+                <img src="thu-muc-anh/seedance-thumbnail.jpg" alt="Seedance 2.5 Sample">
+                <div class="play-btn"><i class="fa-solid fa-play"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CÁC NỀN TẢNG PHỤ TRỢ -->
+    <h3 class="section-title-small">Các Hệ Sinh Thái Phụ Trợ Đi Kèm</h3>
+    <div class="platform-grid">
+        
+        <!-- VEO -->
+        <div class="platform-card veo">
+            <div class="pf-logo-small">
+                <i class="fa-brands fa-google" style="color: #4da6ff;"></i>
+                <h3>Google Veo</h3>
+            </div>
+            <ul class="pf-features-small">
+                <li><i class="fa-solid fa-check"></i> Hỗ trợ độ phân giải 1080p natively.</li>
+                <li><i class="fa-solid fa-check"></i> Am hiểu sâu sắc các thuật ngữ điện ảnh (tracking, aerial).</li>
+                <li><i class="fa-solid fa-check"></i> Rất mạnh trong việc kết hợp ánh sáng (Cinematic look).</li>
+            </ul>
+        </div>
+
+        <!-- KLING -->
+        <div class="platform-card kling">
+            <div class="pf-logo-small">
+                <i class="fa-solid fa-infinity" style="color: #ff99cc;"></i>
+                <h3>Kling AI</h3>
+            </div>
+            <ul class="pf-features-small">
+                <li><i class="fa-solid fa-check"></i> Tái tạo biểu cảm khuôn mặt (3D Face) cực tốt.</li>
+                <li><i class="fa-solid fa-check"></i> Hỗ trợ tạo video thời lượng dài.</li>
+                <li><i class="fa-solid fa-check"></i> Tương tác vật lý (nhân vật ăn uống) tự nhiên.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- BẢNG SO SÁNH -->
+    <div class="comparison-section">
+        <h2 class="section-title">So Sánh <span>Đặc Điểm Kỹ Thuật</span></h2>
+        
+        <div class="compare-table-wrapper">
+            <table class="compare-table">
+                <thead>
+                    <tr>
+                        <th>Tính Năng Trọng Tâm</th>
+                        <th style="color: #d8b4fe;">Seedance 2.5 (Bản Mới)</th>
+                        <th>Google Veo</th>
+                        <th>Kling AI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Text-to-Video (Tạo từ chữ)</td>
+                        <td><span class="badge bg-supreme">Đột phá vượt trội</span></td>
+                        <td><span class="badge bg-best">Xuất sắc</span></td>
+                        <td><span class="badge bg-good">Rất tốt</span></td>
+                    </tr>
+                    <tr>
+                        <td>Độ Nhất Quán Vật Lý (Physics)</td>
+                        <td><span class="badge bg-supreme">Gần như hoàn hảo</span></td>
+                        <td><span class="badge bg-good">Khá tốt</span></td>
+                        <td><span class="badge bg-best">Rất tốt (đặc biệt cơ mặt)</span></td>
+                    </tr>
+                    <tr>
+                        <td>Human Motion (Chuyển động người)</td>
+                        <td><span class="badge bg-supreme">Mượt mà, không gãy nét</span></td>
+                        <td><span class="badge bg-good">Tự nhiên</span></td>
+                        <td><span class="badge bg-best">Số 1 về biểu cảm</span></td>
+                    </tr>
+                    <tr>
+                        <td>Temporal Consistency (Độ ổn định thời gian)</td>
+                        <td><span class="badge bg-supreme">Giữ form 100% xuyên suốt</span></td>
+                        <td><span class="badge bg-best">Rất ổn định</span></td>
+                        <td><span class="badge bg-good">Tốt ở đoạn đầu</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phương Thức Tạo Video - Lộ Trình AI</title>
+    
+    <!-- SCRIPT KIỂM TRA ĐĂNG NHẬP -->
+    <script>
+        if (!localStorage.getItem('session_token')) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- THIẾT LẬP CƠ BẢN --- */
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #09090b; 
+            background-image: 
+                radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(77, 166, 255, 0.05) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: #f4f4f9;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 80%; max-width: 1600px; margin: 40px auto;
+            background: rgba(15, 15, 19, 0.6); backdrop-filter: blur(20px);
+            border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 50px 4vw; box-sizing: border-box;
+        }
+
+        /* --- ĐIỀU HƯỚNG --- */
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 50px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px;
+        }
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px; color: #a855f7;
+            text-decoration: none; font-weight: bold; transition: all 0.3s;
+            background: rgba(168, 85, 247, 0.1); padding: 12px 25px; border-radius: 30px;
+            border: 1px solid rgba(168, 85, 247, 0.3); font-size: 1.1em;
+        }
+        .back-btn:hover { background: rgba(168, 85, 247, 0.2); box-shadow: 0 0 15px rgba(168,85,247,0.3); }
+        .week-badge {
+            background: #a855f7; color: #fff; padding: 6px 16px; border-radius: 20px;
+            font-size: 0.9em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero-section { text-align: center; margin-bottom: 70px; }
+        .hero-title {
+            font-size: 3.2em; font-weight: 900; margin: 20px 0; line-height: 1.2; letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, #a855f7, #ff99cc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-desc { color: #888; font-size: 1.15em; max-width: 800px; margin: 0 auto; }
+
+        /* --- CÁC PHƯƠNG THỨC (GRID) --- */
+        .method-list { display: flex; flex-direction: column; gap: 50px; margin-bottom: 60px; }
+        
+        .method-card {
+            background: #111115; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px;
+            padding: 40px; display: flex; gap: 40px; align-items: center; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .method-card:hover { border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .method-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+        }
+        
+        /* Màu sắc riêng cho từng thẻ */
+        .method-card.t2v::before { background: #4da6ff; }
+        .method-card.i2v::before { background: #a3e635; }
+        .method-card.r2v::before { background: #ffcc00; }
+
+        .m-content { flex: 1.2; }
+        .m-title { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .m-title i { font-size: 2em; }
+        .method-card.t2v .m-title i { color: #4da6ff; }
+        .method-card.i2v .m-title i { color: #a3e635; }
+        .method-card.r2v .m-title i { color: #ffcc00; }
+        
+        .m-title h2 { margin: 0; font-size: 2em; color: #fff; }
+        .m-desc { color: #bbb; font-size: 1.15em; line-height: 1.7; margin-bottom: 10px; }
+        .m-seedance-note { color: #d8b4fe; font-size: 1em; margin-top: 15px; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+
+        /* Khối Visual (Mô phỏng luồng Input -> Output) */
+        .m-visual {
+            flex: 1.5; display: flex; flex-direction: column; gap: 15px;
+            background: rgba(0,0,0,0.3); padding: 25px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);
+        }
+        .flow-step { display: flex; align-items: center; gap: 15px; }
+        .flow-box {
+            flex: 1; aspect-ratio: 16/9; background: #000; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #666; font-size: 0.9em; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .flow-box img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .flow-arrow { color: #555; font-size: 1.2em; }
+        
+        /* Box chứa Text Prompt */
+        .flow-text-box {
+            flex: 1; background: #1a1a20; padding: 15px; border-radius: 8px; border: 1px solid #333;
+            color: #888; font-family: monospace; font-size: 0.85em; display: flex; align-items: center; justify-content: center; text-align: center; height: 100%; box-sizing: border-box;
+        }
+
+        /* Lưới riêng cho Multi-Ref */
+        .multi-ref-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+            background: rgba(0,0,0,0.5); padding: 8px; border-radius: 8px; flex: 1.2; border: 1px solid rgba(255,204,0,0.2);
+        }
+        .multi-ref-item {
+            aspect-ratio: 1; background: #222; border-radius: 4px; overflow: hidden; position: relative;
+            display: flex; align-items: center; justify-content: center; color: #555;
+        }
+        .multi-ref-item img { width: 100%; height: 100%; object-fit: cover; }
+        .multi-ref-item i { font-size: 1.5em; }
+        .ref-label { position: absolute; top: 3px; left: 3px; background: rgba(0,0,0,0.8); font-size: 0.65em; padding: 2px 5px; border-radius: 3px; color: #fff; }
+
+        /* --- KHỐI LỜI KHUYÊN (RECOMMENDATION) --- */
+        .recommend-box {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(77, 166, 255, 0.1) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 40px;
+            text-align: center; margin-top: 20px;
+        }
+        .recommend-box h3 { color: #fff; font-size: 1.6em; margin: 0 0 15px 0; display: flex; justify-content: center; align-items: center; gap: 10px;}
+        .recommend-box h3 i { color: #ffcc00; }
+        .recommend-box p { color: #bbb; font-size: 1.1em; max-width: 850px; margin: 0 auto 25px auto; line-height: 1.7; }
+        
+        .workflow-highlight {
+            display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 20px; align-items: center;
+            background: rgba(0,0,0,0.4); padding: 20px 40px; border-radius: 40px;
+            border: 1px solid rgba(163,230,53,0.3);
+        }
+        .wh-item {
+            color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1.15em; font-weight: bold; display: flex; align-items: center; gap: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .method-card { flex-direction: column; }
+            .m-visual { width: 100%; box-sizing: border-box; }
+        }
+        @media (max-width: 768px) {
+            .container { width: 95%; padding: 30px 4vw; }
+            .flow-step { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); margin: 5px 0; }
+            .workflow-highlight { flex-direction: column; gap: 10px; padding: 20px; border-radius: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div class="header-top">
+        <!-- Đã sửa thành hoc-tap.html -->
+        <a href="hoc-tap.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        <div class="week-badge">Tuần 2 - 3</div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <h1 class="hero-title">CÁC PHƯƠNG THỨC TẠO VIDEO</h1>
+        <p class="hero-desc">Hiểu rõ các phương thức đầu vào (Input) là chìa khóa để kiểm soát hoàn toàn đầu ra (Output). Xuyên suốt lộ trình, chúng ta sẽ tập trung vào những phương pháp tối ưu nhất để kiểm soát khung hình.</p>
+    </div>
+
+    <!-- DANH SÁCH CÁC PHƯƠNG THỨC -->
+    <div class="method-list">
+        
+        <!-- 1. TEXT TO VIDEO -->
+        <div class="method-card t2v">
+            <div class="m-content">
+                <div class="m-title">
+                    <i class="fa-solid fa-keyboard"></i>
+                    <h2>Text-to-Video (T2V)</h2>
+                </div>
+                <p class="m-desc">Tạo video hoàn toàn từ một câu lệnh văn bản. AI sẽ tự động tưởng tượng ra bối cảnh, nhân vật, góc máy và chuyển động dựa trên những gì bạn miêu tả. Phương pháp này mang lại sự tự do sáng tạo tối đa nhưng rất khó để kiểm soát chính xác 100% bố cục theo ý đồ.</p>
+            </div>
+            <div class="m-visual">
+                <div style="color: #888; font-size: 0.85em; text-transform: uppercase; margin-bottom: 5px;">Mô phỏng luồng (Flow)</div>
+                <div class="flow-step">
+                    <div class="flow-text-box" style="flex: 1.2;">
+                        "A cinematic drone shot of a futuristic city at sunset, neon glowing..."
+                    </div>
+                    <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                    <div class="flow-box" style="flex: 1;">
+                        <img src="thu-muc-anh/t2v-result.jpg" alt="Kết quả Video">
+                        <i class="fa-solid fa-play" style="position: absolute; color: rgba(255,255,255,0.5); font-size: 2em; z-index: 1;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. IMAGE TO VIDEO -->
+        <div class="method-card i2v">
+            <div class="m-content">
+                <div class="m-title">
+                    <i class="fa-solid fa-image"></i>
+                    <h2>Image-to-Video (I2V)</h2>
+                </div>
+                <p class="m-desc">Cung cấp cho AI một bức ảnh tĩnh (thường được tạo trước bằng Midjourney) làm khung hình đầu tiên. Sau đó kết hợp với Prompt để ra lệnh cho bức ảnh chuyển động. Đây là phương thức chuẩn mực để kiểm soát tuyệt đối bố cục, ánh sáng và màu sắc.</p>
+            </div>
+            <div class="m-visual">
+                <div style="color: #888; font-size: 0.85em; text-transform: uppercase; margin-bottom: 5px;">Mô phỏng luồng (Flow)</div>
+                <div class="flow-step">
+                    <div class="flow-box" style="flex: 0.8;">
+                        <div style="position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; font-size: 0.8em; z-index: 2; color: #fff;">Start Frame</div>
+                        <img src="thu-muc-anh/i2v-input.jpg" alt="Ảnh đầu vào">
+                    </div>
+                    <span style="font-weight: bold; color: #555;">+</span>
+                    <div class="flow-text-box" style="flex: 1.2;">
+                        Prompt: "Cinematic slow pan from left to right, hair gently blowing in the wind..."
+                    </div>
+                    <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                    <div class="flow-box" style="flex: 1;">
+                        <div style="position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px; font-size: 0.8em; z-index: 2; color: #fff;">Output</div>
+                        <img src="thu-muc-anh/i2v-result.jpg" alt="Kết quả Video">
+                        <i class="fa-solid fa-play" style="position: absolute; color: rgba(255,255,255,0.5); font-size: 2em; z-index: 1;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. REFERENCE TO VIDEO -->
+        <div class="method-card r2v">
+            <div class="m-content">
+                <div class="m-title">
+                    <i class="fa-solid fa-user-tag"></i>
+                    <h2>Reference-to-Video (Ref)</h2>
+                </div>
+                <p class="m-desc">Cung cấp các tư liệu tham chiếu (Khuôn mặt, Trang phục, Phong cách nghệ thuật, Âm thanh) kết hợp với Text để điều khiển đầu ra. Phương pháp này đóng vai trò then chốt trong việc giữ sự nhất quán (Consistency) của nhân vật xuyên suốt nhiều cảnh quay.</p>
+                <div class="m-seedance-note">
+                    <i class="fa-solid fa-award"></i> Seedance hiện đang đứng số 1 thế giới về khả năng xử lý đồng thời đa tham chiếu (Multi-ref).
+                </div>
+            </div>
+            <div class="m-visual">
+                <div style="color: #888; font-size: 0.85em; text-transform: uppercase; margin-bottom: 5px;">Mô phỏng luồng (Flow)</div>
+                <div class="flow-step">
+                    <!-- Multi-ref Grid (6 ô) -->
+                    <div class="multi-ref-grid">
+                        <div class="multi-ref-item">
+                            <span class="ref-label">Face</span>
+                            <img src="thu-muc-anh/ref-face.jpg" alt="Face">
+                        </div>
+                        <div class="multi-ref-item">
+                            <span class="ref-label">Style</span>
+                            <img src="thu-muc-anh/ref-style.jpg" alt="Style">
+                        </div>
+                        <div class="multi-ref-item">
+                            <span class="ref-label">Pose</span>
+                            <img src="thu-muc-anh/ref-pose.jpg" alt="Pose">
+                        </div>
+                        <div class="multi-ref-item">
+                            <span class="ref-label">Outfit</span>
+                            <img src="thu-muc-anh/ref-outfit.jpg" alt="Outfit">
+                        </div>
+                        <div class="multi-ref-item">
+                            <span class="ref-label">Video</span>
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <div class="multi-ref-item">
+                            <span class="ref-label">Audio</span>
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                    </div>
+                    
+                    <span style="font-weight: bold; color: #555;">+</span>
+                    
+                    <div class="flow-text-box" style="flex: 0.8;">
+                        Prompt: "Speaking directly to camera..."
+                    </div>
+                    
+                    <i class="fa-solid fa-arrow-right flow-arrow"></i>
+                    
+                    <div class="flow-box" style="flex: 1;">
+                        <img src="thu-muc-anh/ref-result.jpg" alt="Kết quả Video">
+                        <i class="fa-solid fa-play" style="position: absolute; color: rgba(255,255,255,0.5); font-size: 2em; z-index: 1;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- KHỐI PHƯƠNG THỨC TRỌNG TÂM -->
+    <div class="recommend-box">
+        <h3><i class="fa-solid fa-bullseye"></i> Phương Thức Trọng Tâm Của Team Hiện Tại</h3>
+        <p>Trong quy trình sản xuất phim thực tế, để nắm quyền kiểm soát tuyệt đối về mặt hình ảnh, bố cục và duy trì tính nhất quán cho nhân vật xuyên suốt dự án, <strong>hai phương thức cốt lõi</strong> bạn cần làm chủ hoàn toàn chính là:</p>
+        <div class="workflow-highlight">
+            <div class="wh-item"><i class="fa-solid fa-image" style="color: #a3e635;"></i> Image-to-Video (Start Frame)</div>
+            <i class="fa-solid fa-link" style="color: #666; font-size: 1.2em;"></i>
+            <div class="wh-item"><i class="fa-solid fa-user-tag" style="color: #ffcc00;"></i> Reference-to-Video</div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
