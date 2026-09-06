@@ -1,0 +1,51 @@
+{
+    // Tắt kiểm tra HTML để không hiển thị warning
+    "html.validate.scripts": false,
+    "html.validate.styles": false,
+    
+    // Tắt kiểm tra CSS
+    "css.validate": false,
+    "scss.validate": false,
+    "less.validate": false,
+    
+    // Tắt kiểm tra JavaScript
+    "javascript.validate.enable": false,
+    
+    // Tắt kiểm tra JSON
+    "json.validate.enable": false,
+    
+    // Tắt kiểm tra Markdown
+    "markdown.validate.enable": false,
+    
+    // Tắt HTMLHint (nếu có cài extension)
+    "htmlhint.enable": false,
+    
+    // Tắt ESLint (nếu có cài extension)
+    "eslint.enable": false,
+    
+    // Tắt Stylelint (nếu có cài extension)
+    "stylelint.enable": false,
+    
+    // Tắt Prettier tự động sửa lỗi
+    "prettier.enable": false,
+    
+    // Tắt kiểm tra TypeScript
+    "typescript.validate.enable": false,
+    
+    // Tắt kiểm tra PHP
+    "php.validate.enable": false,
+    
+    // Tắt kiểm tra Python
+    "python.linting.enabled": false,
+    
+    // Tắt kiểm tra C/C++
+    "C_Cpp.errorSquiggles": "disabled",
+    
+    // Tắt kiểm tra Go
+    "go.lintOnSave": "off",
+    
+    // Tắt kiểm tra Ruby
+    "ruby.lint": {
+        "rubocop": false
+    }
+}
